@@ -1,0 +1,83 @@
+-- Desabilitar atualizações seguras para permitir operações de exclusão e atualização
+SET SQL_SAFE_UPDATES = 0;
+
+-- Criação do Banco de Dados e Seleção
+CREATE DATABASE IF NOT EXISTS Biblioteca_DS3;
+USE Biblioteca_DS3;
+
+-- Criação da tabela Autores
+CREATE TABLE IF NOT EXISTS Autores (
+    AutorID INT AUTO_INCREMENT PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Nacionalidade VARCHAR(100) NOT NULL
+);
+
+-- Criação da tabela Livros
+CREATE TABLE IF NOT EXISTS Livros (
+    LivroID INT AUTO_INCREMENT PRIMARY KEY,
+    Titulo VARCHAR(100) NOT NULL,
+    AutorID INT,
+    AnoPublicacao YEAR,
+    Genero VARCHAR(100),
+    FOREIGN KEY (AutorID) REFERENCES Autores(AutorID) ON DELETE SET NULL
+);
+
+-- Criação da tabela Emprestimos
+CREATE TABLE IF NOT EXISTS Emprestimos (
+    EmprestimoID INT AUTO_INCREMENT PRIMARY KEY,
+    LivroID INT,
+    DataEmprestimo DATE NOT NULL,
+    DataDevolucao DATE,
+    NomeUsuario VARCHAR(100) NOT NULL,
+    FOREIGN KEY (LivroID) REFERENCES Livros(LivroID) ON DELETE CASCADE
+);
+
+-- Inserção de Dados na tabela Autores
+INSERT INTO Autores (Nome, Nacionalidade) VALUES
+('J.K. Rowling', 'Britânica'),
+('George Orwell', 'Britânico'),
+('Gabriel García Márquez', 'Colombiano');
+
+-- Inserção de Dados na tabela Livros
+-- Assegurando que existam autores com IDs 1, 2 e 3
+INSERT INTO Livros (Titulo, AutorID, AnoPublicacao, Genero) VALUES
+('Harry Potter e a Pedra Filosofal', 1, 1997, 'Fantasia'),
+('1984', 2, 1949, 'Distopia'),
+('Cem Anos de Solidão', 3, 1967, 'Realismo mágico');
+
+-- Verificar dados na tabela Livros
+SELECT * FROM Livros;
+
+-- Inserção de Dados na tabela Emprestimos
+INSERT INTO Emprestimos (LivroID, DataEmprestimo, DataDevolucao, NomeUsuario) VALUES
+(1, '2024-08-01', NULL, 'Alice Silva'),
+(2, '2024-08-15', '2024-08-22', 'Bob Santos'),
+(3, '2024-08-20', NULL, 'Carla Oliveira');
+
+-- Consultas de Dados
+-- Listar todos os livros com os nomes de seus autores
+SELECT Livros.Titulo, Autores.Nome AS Autor, Livros.AnoPublicacao, Livros.Genero
+FROM Livros
+JOIN Autores ON Livros.AutorID = Autores.AutorID;
+
+-- Listar os empréstimos que ainda estão em aberto
+SELECT Emprestimos.EmprestimoID, Livros.Titulo, Emprestimos.DataEmprestimo, Emprestimos.NomeUsuario
+FROM Emprestimos
+JOIN Livros ON Emprestimos.LivroID = Livros.LivroID
+WHERE Emprestimos.DataDevolucao IS NULL;
+
+-- Atualização de Dados
+-- Atualizar a data de devolução de um empréstimo específico
+UPDATE Emprestimos
+SET DataDevolucao = '2024-08-25'
+WHERE EmprestimoID = 1;
+
+-- Exclusão de Dados
+-- Remover um livro e os registros de empréstimos associados a ele
+-- Primeiro, removemos os empréstimos associados ao livro
+DELETE FROM Emprestimos
+WHERE LivroID = 1;
+
+-- Em seguida, removemos o livro
+DELETE FROM Livros
+WHERE LivroID = 1;
